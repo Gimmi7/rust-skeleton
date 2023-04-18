@@ -18,6 +18,7 @@ fn main() {
 
 #[cfg(test)]
 mod test {
+    use std::path::Component::CurDir;
     use ethers::core::k256::elliptic_curve::weierstrass::add;
     use ethers::prelude::k256::ecdsa::SigningKey;
     use ethers::prelude::k256::elliptic_curve::{generic_array, NonZeroScalar, PrimeField};
@@ -28,6 +29,10 @@ mod test {
     use hex;
     use secp256k1::{self, rand, PublicKey, SecretKey};
     use std::str::FromStr;
+    use curv::arithmetic::Converter;
+    use curv::BigInt;
+    use curv::elliptic::curves;
+
 
     #[test]
     fn ether_wallet() {
@@ -64,5 +69,27 @@ mod test {
 
         let address = Address::from_slice(&hashed_public_key[12..]);
         println!("Ethereum address: {}", hex::encode(address));
+    }
+
+    fn calc_addr(s: BigInt) {
+        let generator = curves::Point::<curves::Secp256k1>::generator();
+
+        let secret = curves::Scalar::from_bigint(&s);
+        let pk = secret * generator;
+
+
+        let pk_bytes = pk.to_bytes(false);
+
+        let pk_hash = keccak256(pk_bytes.as_ref()[1..].to_vec());
+
+        let addr = Address::from_slice(&pk_hash[12..]);
+        println!("addr for priv={}, is {:?}", s, addr);
+    }
+
+    #[test]
+    fn test_special_addr() {
+        calc_addr(0.into());
+        calc_addr(1.into());
+        calc_addr(BigInt::from(-1));
     }
 }

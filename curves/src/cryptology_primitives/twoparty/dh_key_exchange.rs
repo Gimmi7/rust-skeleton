@@ -117,4 +117,17 @@ mod tests {
             Point::generator() * two_secret
         )
     }
+
+    #[test]
+    fn test_public_key_serialize() {
+        let generator = Point::<Secp256k1>::generator();
+        let secret = Scalar::<Secp256k1>::from(1);
+        let pk = secret * generator;
+        let compressed_pk = &pk.to_bytes(true);
+        println!("{:?}", compressed_pk.as_ref());
+        println!("{}", compressed_pk.as_ref().len());
+        let uncompressed_pk = pk.to_bytes(false);
+        println!("{:?}", uncompressed_pk.as_ref());
+        println!("{}", uncompressed_pk.as_ref().len());
+    }
 }
