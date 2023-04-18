@@ -3,8 +3,9 @@ use std::marker::PhantomData;
 use curv::elliptic::curves;
 use curv::cryptographic_primitives::hashing::{Digest, DigestExt};
 use curv::elliptic::curves::Point;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct DLogProof<E: curves::Curve, H: Digest + Clone> {
     pub pk: curves::Point<E>,
     pub pk_t_rand_commitment: curves::Point<E>,
@@ -65,6 +66,8 @@ mod tests {
     fn test_dlog_proof() {
         let witness = curves::Scalar::random();
         let dlog_proof = DLogProof::<curves::Secp256k1, sha3::Keccak256>::prove(&witness);
+        let proof_json = serde_json::to_string(&dlog_proof).unwrap();
+        println!("{}", proof_json);
         println!("dlog_proof={:?}", dlog_proof);
         assert!(DLogProof::verify(&dlog_proof).is_ok());
     }
